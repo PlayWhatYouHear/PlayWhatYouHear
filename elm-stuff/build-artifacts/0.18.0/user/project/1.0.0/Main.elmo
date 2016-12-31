@@ -1,0 +1,450 @@
+var _user$project$Main$renderScore = F2(
+	function (numCorrect, numMistakes) {
+		return A2(
+			_elm_lang$html$Html$h2,
+			{ctor: '[]'},
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html$text(
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						_elm_lang$core$Basics$toString(numCorrect),
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							'/',
+							_elm_lang$core$Basics$toString(numMistakes + numCorrect)))),
+				_1: {ctor: '[]'}
+			});
+	});
+var _user$project$Main$Challenge = function (a) {
+	return {solution: a};
+};
+var _user$project$Main$Model = F6(
+	function (a, b, c, d, e, f) {
+		return {time: a, buttonPressed: b, challenge: c, numCorrect: d, numMistakes: e, meterProgress: f};
+	});
+var _user$project$Main$NewChallenge = function (a) {
+	return {ctor: 'NewChallenge', _0: a};
+};
+var _user$project$Main$generateChallengeCmd = A2(
+	_elm_lang$core$Random$generate,
+	function (_p0) {
+		return _user$project$Main$NewChallenge(
+			_user$project$Main$Challenge(
+				_user$project$MusicNotes$noteFromMidi(_p0)));
+	},
+	A2(_elm_lang$core$Random$int, 0, 119));
+var _user$project$Main$init = {
+	ctor: '_Tuple2',
+	_0: {
+		time: 0,
+		buttonPressed: _elm_lang$core$Maybe$Nothing,
+		challenge: _user$project$Main$Challenge(
+			A2(_user$project$MusicNotes$noteFromPitchClass, 1, _user$project$MusicNotes$C)),
+		numCorrect: 0,
+		numMistakes: 0,
+		meterProgress: 0
+	},
+	_1: _user$project$Main$generateChallengeCmd
+};
+var _user$project$Main$handleButtonPress = F3(
+	function (msg, model, note) {
+		var solved = _elm_lang$core$Native_Utils.eq(
+			_user$project$MusicNotes$pitchClassFromNote(note),
+			_user$project$MusicNotes$pitchClassFromNote(model.challenge.solution));
+		var buttonPressed = solved ? _elm_lang$core$Maybe$Nothing : _elm_lang$core$Maybe$Just(note);
+		var numCorrect = solved ? (model.numCorrect + 1) : model.numCorrect;
+		var numMistakes = solved ? model.numMistakes : (model.numMistakes + 1);
+		var command = solved ? _user$project$Main$generateChallengeCmd : _elm_lang$core$Platform_Cmd$none;
+		return {
+			ctor: '_Tuple2',
+			_0: _elm_lang$core$Native_Utils.update(
+				model,
+				{buttonPressed: buttonPressed, numCorrect: numCorrect, numMistakes: numMistakes}),
+			_1: command
+		};
+	});
+var _user$project$Main$update = F2(
+	function (msg, model) {
+		var _p1 = msg;
+		switch (_p1.ctor) {
+			case 'MetTick':
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{time: _p1._0}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			case 'AnimationTick':
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{
+							meterProgress: A2(_elm_lang$core$Basics_ops['%'], model.meterProgress + 1, 700)
+						}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			case 'ButtonPress':
+				return A3(_user$project$Main$handleButtonPress, msg, model, _p1._0);
+			case 'GenerateChallenge':
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{buttonPressed: _elm_lang$core$Maybe$Nothing}),
+					_1: _user$project$Main$generateChallengeCmd
+				};
+			default:
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{challenge: _p1._0}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+		}
+	});
+var _user$project$Main$GenerateChallenge = {ctor: 'GenerateChallenge'};
+var _user$project$Main$ButtonPress = function (a) {
+	return {ctor: 'ButtonPress', _0: a};
+};
+var _user$project$Main$noteButton = function (note) {
+	return A2(
+		_elm_lang$html$Html$button,
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Events$onClick(
+				_user$project$Main$ButtonPress(note)),
+			_1: {
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$style(
+					{
+						ctor: '::',
+						_0: {ctor: '_Tuple2', _0: 'font-size', _1: '2em'},
+						_1: {
+							ctor: '::',
+							_0: {ctor: '_Tuple2', _0: 'width', _1: '8%'},
+							_1: {ctor: '[]'}
+						}
+					}),
+				_1: {ctor: '[]'}
+			}
+		},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html$text(
+				_user$project$MusicNotes$pitchClassName(
+					_user$project$MusicNotes$pitchClassFromNote(note))),
+			_1: {ctor: '[]'}
+		});
+};
+var _user$project$Main$view = function (model) {
+	var score = A2(_user$project$Main$renderScore, model.numCorrect, model.numMistakes);
+	var noteButtons = A2(
+		_elm_lang$core$List$map,
+		function (_p2) {
+			return _user$project$Main$noteButton(
+				_user$project$MusicNotes$noteFromMidi(_p2));
+		},
+		{
+			ctor: '::',
+			_0: 0,
+			_1: {
+				ctor: '::',
+				_0: 1,
+				_1: {
+					ctor: '::',
+					_0: 2,
+					_1: {
+						ctor: '::',
+						_0: 3,
+						_1: {
+							ctor: '::',
+							_0: 4,
+							_1: {
+								ctor: '::',
+								_0: 5,
+								_1: {
+									ctor: '::',
+									_0: 6,
+									_1: {
+										ctor: '::',
+										_0: 7,
+										_1: {
+											ctor: '::',
+											_0: 8,
+											_1: {
+												ctor: '::',
+												_0: 9,
+												_1: {
+													ctor: '::',
+													_0: 10,
+													_1: {
+														ctor: '::',
+														_0: 11,
+														_1: {ctor: '[]'}
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		});
+	var myH2 = function (s) {
+		return A2(
+			_elm_lang$html$Html$h2,
+			{ctor: '[]'},
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html$text(s),
+				_1: {ctor: '[]'}
+			});
+	};
+	var status = myH2(
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			'Press ',
+			A2(
+				_elm_lang$core$Basics_ops['++'],
+				_user$project$MusicNotes$pitchClassName(
+					_user$project$MusicNotes$pitchClassFromNote(model.challenge.solution)),
+				function () {
+					var _p3 = model.buttonPressed;
+					if (_p3.ctor === 'Just') {
+						return A2(
+							_elm_lang$core$Basics_ops['++'],
+							' - ',
+							A2(
+								_elm_lang$core$Basics_ops['++'],
+								_user$project$MusicNotes$pitchClassName(
+									_user$project$MusicNotes$pitchClassFromNote(_p3._0)),
+								' Pressed'));
+					} else {
+						return '';
+					}
+				}())));
+	var myH1 = function (s) {
+		return A2(
+			_elm_lang$html$Html$h1,
+			{ctor: '[]'},
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html$text(s),
+				_1: {ctor: '[]'}
+			});
+	};
+	var title = myH1('Call and Answer Trainer');
+	return A2(
+		_elm_lang$html$Html$div,
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$style(
+				{
+					ctor: '::',
+					_0: {ctor: '_Tuple2', _0: 'background-color', _1: '#BBBBBB'},
+					_1: {
+						ctor: '::',
+						_0: {ctor: '_Tuple2', _0: 'width', _1: '100%'},
+						_1: {
+							ctor: '::',
+							_0: {ctor: '_Tuple2', _0: 'position', _1: 'absolute'},
+							_1: {
+								ctor: '::',
+								_0: {ctor: '_Tuple2', _0: 'height', _1: 'calc(100vh)'},
+								_1: {ctor: '[]'}
+							}
+						}
+					}
+				}),
+			_1: {ctor: '[]'}
+		},
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			{
+				ctor: '::',
+				_0: title,
+				_1: {
+					ctor: '::',
+					_0: status,
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_elm_lang$html$Html$br,
+							{ctor: '[]'},
+							{ctor: '[]'}),
+						_1: {
+							ctor: '::',
+							_0: A2(
+								_elm_lang$html$Html$button,
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html_Events$onClick(_user$project$Main$GenerateChallenge),
+									_1: {
+										ctor: '::',
+										_0: _elm_lang$html$Html_Attributes$style(
+											{
+												ctor: '::',
+												_0: {ctor: '_Tuple2', _0: 'font-size', _1: '2em'},
+												_1: {ctor: '[]'}
+											}),
+										_1: {ctor: '[]'}
+									}
+								},
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html$text('New Challenge'),
+									_1: {ctor: '[]'}
+								}),
+							_1: {
+								ctor: '::',
+								_0: A2(
+									_elm_lang$html$Html$br,
+									{ctor: '[]'},
+									{ctor: '[]'}),
+								_1: {
+									ctor: '::',
+									_0: A2(
+										_elm_lang$html$Html$br,
+										{ctor: '[]'},
+										{ctor: '[]'}),
+									_1: {ctor: '[]'}
+								}
+							}
+						}
+					}
+				}
+			},
+			{
+				ctor: '::',
+				_0: A2(
+					_elm_lang$svg$Svg$svg,
+					{
+						ctor: '::',
+						_0: _elm_lang$svg$Svg_Attributes$width('700'),
+						_1: {ctor: '[]'}
+					},
+					{
+						ctor: '::',
+						_0: A2(
+							_elm_lang$svg$Svg$line,
+							{
+								ctor: '::',
+								_0: _elm_lang$svg$Svg_Attributes$x1('0'),
+								_1: {
+									ctor: '::',
+									_0: _elm_lang$svg$Svg_Attributes$y1('10'),
+									_1: {
+										ctor: '::',
+										_0: _elm_lang$svg$Svg_Attributes$x2('700'),
+										_1: {
+											ctor: '::',
+											_0: _elm_lang$svg$Svg_Attributes$y2('10'),
+											_1: {
+												ctor: '::',
+												_0: _elm_lang$svg$Svg_Attributes$stroke('#FFFFFF'),
+												_1: {
+													ctor: '::',
+													_0: _elm_lang$svg$Svg_Attributes$strokeWidth('5'),
+													_1: {ctor: '[]'}
+												}
+											}
+										}
+									}
+								}
+							},
+							{ctor: '[]'}),
+						_1: {
+							ctor: '::',
+							_0: A2(
+								_elm_lang$svg$Svg$line,
+								{
+									ctor: '::',
+									_0: _elm_lang$svg$Svg_Attributes$x1('0'),
+									_1: {
+										ctor: '::',
+										_0: _elm_lang$svg$Svg_Attributes$y1('10'),
+										_1: {
+											ctor: '::',
+											_0: _elm_lang$svg$Svg_Attributes$x2(
+												_elm_lang$core$Basics$toString(model.meterProgress)),
+											_1: {
+												ctor: '::',
+												_0: _elm_lang$svg$Svg_Attributes$y2('10'),
+												_1: {
+													ctor: '::',
+													_0: _elm_lang$svg$Svg_Attributes$stroke('#22DD22'),
+													_1: {
+														ctor: '::',
+														_0: _elm_lang$svg$Svg_Attributes$strokeWidth('5'),
+														_1: {ctor: '[]'}
+													}
+												}
+											}
+										}
+									}
+								},
+								{ctor: '[]'}),
+							_1: {
+								ctor: '::',
+								_0: A2(
+									_elm_lang$svg$Svg$line,
+									{
+										ctor: '::',
+										_0: _elm_lang$svg$Svg_Attributes$x1('0'),
+										_1: {
+											ctor: '::',
+											_0: _elm_lang$svg$Svg_Attributes$y1('13'),
+											_1: {
+												ctor: '::',
+												_0: _elm_lang$svg$Svg_Attributes$x2('700'),
+												_1: {
+													ctor: '::',
+													_0: _elm_lang$svg$Svg_Attributes$y2('13'),
+													_1: {
+														ctor: '::',
+														_0: _elm_lang$svg$Svg_Attributes$stroke('#555555'),
+														_1: {
+															ctor: '::',
+															_0: _elm_lang$svg$Svg_Attributes$strokeWidth('2'),
+															_1: {ctor: '[]'}
+														}
+													}
+												}
+											}
+										}
+									},
+									{ctor: '[]'}),
+								_1: {ctor: '[]'}
+							}
+						}
+					}),
+				_1: {ctor: '[]'}
+			}));
+};
+var _user$project$Main$AnimationTick = function (a) {
+	return {ctor: 'AnimationTick', _0: a};
+};
+var _user$project$Main$MetTick = function (a) {
+	return {ctor: 'MetTick', _0: a};
+};
+var _user$project$Main$subscriptions = function (model) {
+	return _elm_lang$core$Platform_Sub$batch(
+		{
+			ctor: '::',
+			_0: A2(_elm_lang$core$Time$every, 500 * _elm_lang$core$Time$millisecond, _user$project$Main$MetTick),
+			_1: {
+				ctor: '::',
+				_0: A2(_elm_lang$core$Time$every, 15 * _elm_lang$core$Time$millisecond, _user$project$Main$AnimationTick),
+				_1: {ctor: '[]'}
+			}
+		});
+};
+var _user$project$Main$main = _elm_lang$html$Html$program(
+	{init: _user$project$Main$init, view: _user$project$Main$view, update: _user$project$Main$update, subscriptions: _user$project$Main$subscriptions})();

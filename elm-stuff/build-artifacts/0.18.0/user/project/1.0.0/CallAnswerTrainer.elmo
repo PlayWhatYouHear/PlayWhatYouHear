@@ -1,0 +1,360 @@
+var _user$project$CallAnswerTrainer$renderScore = F2(
+	function (numCorrect, numMistakes) {
+		return A2(
+			_elm_lang$html$Html$h2,
+			{ctor: '[]'},
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html$text(
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						_elm_lang$core$Basics$toString(numCorrect),
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							'/',
+							_elm_lang$core$Basics$toString(numMistakes + numCorrect)))),
+				_1: {ctor: '[]'}
+			});
+	});
+var _user$project$CallAnswerTrainer$title = A2(
+	_elm_lang$html$Html$h1,
+	{ctor: '[]'},
+	{
+		ctor: '::',
+		_0: _elm_lang$html$Html$text('Call and Answer Trainer'),
+		_1: {ctor: '[]'}
+	});
+var _user$project$CallAnswerTrainer$bodyStyle = _elm_lang$html$Html_Attributes$style(
+	{
+		ctor: '::',
+		_0: {ctor: '_Tuple2', _0: 'background-color', _1: '#DDDDDD'},
+		_1: {
+			ctor: '::',
+			_0: {ctor: '_Tuple2', _0: 'width', _1: '100%'},
+			_1: {
+				ctor: '::',
+				_0: {ctor: '_Tuple2', _0: 'position', _1: 'absolute'},
+				_1: {
+					ctor: '::',
+					_0: {ctor: '_Tuple2', _0: 'top', _1: '0px'},
+					_1: {
+						ctor: '::',
+						_0: {ctor: '_Tuple2', _0: 'left', _1: '0px'},
+						_1: {
+							ctor: '::',
+							_0: {ctor: '_Tuple2', _0: 'height', _1: 'calc(100vh)'},
+							_1: {ctor: '[]'}
+						}
+					}
+				}
+			}
+		}
+	});
+var _user$project$CallAnswerTrainer$playMelody = _elm_lang$core$Native_Platform.outgoingPort(
+	'playMelody',
+	function (v) {
+		return _elm_lang$core$Native_List.toArray(v).map(
+			function (v) {
+				return {midiNumber: v.midiNumber};
+			});
+	});
+var _user$project$CallAnswerTrainer$Challenge = function (a) {
+	return {solution: a};
+};
+var _user$project$CallAnswerTrainer$Model = F5(
+	function (a, b, c, d, e) {
+		return {time: a, challenge: b, numCorrect: c, numMistakes: d, meterProgress: e};
+	});
+var _user$project$CallAnswerTrainer$PlayMelody = {ctor: 'PlayMelody'};
+var _user$project$CallAnswerTrainer$NewChallenge = function (a) {
+	return {ctor: 'NewChallenge', _0: a};
+};
+var _user$project$CallAnswerTrainer$generateChallengeCmd = A2(
+	_elm_lang$core$Random$generate,
+	function (_p0) {
+		return _user$project$CallAnswerTrainer$NewChallenge(
+			_user$project$CallAnswerTrainer$Challenge(
+				_user$project$MusicNotes$noteFromMidi(_p0)));
+	},
+	A2(_elm_lang$core$Random$int, 0, 119));
+var _user$project$CallAnswerTrainer$init = {
+	ctor: '_Tuple2',
+	_0: {
+		time: 0,
+		challenge: _user$project$CallAnswerTrainer$Challenge(
+			A2(_user$project$MusicNotes$noteFromPitchClass, 1, _user$project$MusicNotes$C)),
+		numCorrect: 0,
+		numMistakes: 0,
+		meterProgress: 0
+	},
+	_1: _user$project$CallAnswerTrainer$generateChallengeCmd
+};
+var _user$project$CallAnswerTrainer$update = F2(
+	function (msg, model) {
+		var _p1 = msg;
+		switch (_p1.ctor) {
+			case 'MetTick':
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{time: _p1._0}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			case 'AnimationTick':
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{
+							meterProgress: A2(_elm_lang$core$Basics_ops['%'], model.meterProgress + 1, 700)
+						}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			case 'GenerateChallenge':
+				return {ctor: '_Tuple2', _0: model, _1: _user$project$CallAnswerTrainer$generateChallengeCmd};
+			case 'NewChallenge':
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{challenge: _p1._0}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			default:
+				return {
+					ctor: '_Tuple2',
+					_0: model,
+					_1: _user$project$CallAnswerTrainer$playMelody(
+						{
+							ctor: '::',
+							_0: _user$project$MusicNotes$Note(32),
+							_1: {ctor: '[]'}
+						})
+				};
+		}
+	});
+var _user$project$CallAnswerTrainer$GenerateChallenge = {ctor: 'GenerateChallenge'};
+var _user$project$CallAnswerTrainer$view = function (model) {
+	var score = A2(_user$project$CallAnswerTrainer$renderScore, model.numCorrect, model.numMistakes);
+	var myH2 = function (s) {
+		return A2(
+			_elm_lang$html$Html$h2,
+			{ctor: '[]'},
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html$text(s),
+				_1: {ctor: '[]'}
+			});
+	};
+	var status = myH2(
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			'Press ',
+			_user$project$MusicNotes$pitchClassName(
+				_user$project$MusicNotes$pitchClassFromNote(model.challenge.solution))));
+	return A2(
+		_elm_lang$html$Html$div,
+		{
+			ctor: '::',
+			_0: _user$project$CallAnswerTrainer$bodyStyle,
+			_1: {ctor: '[]'}
+		},
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			{
+				ctor: '::',
+				_0: _user$project$CallAnswerTrainer$title,
+				_1: {
+					ctor: '::',
+					_0: status,
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_elm_lang$html$Html$br,
+							{ctor: '[]'},
+							{ctor: '[]'}),
+						_1: {
+							ctor: '::',
+							_0: A2(
+								_elm_lang$html$Html$button,
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html_Events$onClick(_user$project$CallAnswerTrainer$PlayMelody),
+									_1: {ctor: '[]'}
+								},
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html$text('Play Melody'),
+									_1: {ctor: '[]'}
+								}),
+							_1: {
+								ctor: '::',
+								_0: A2(
+									_elm_lang$html$Html$button,
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html_Events$onClick(_user$project$CallAnswerTrainer$GenerateChallenge),
+										_1: {
+											ctor: '::',
+											_0: _elm_lang$html$Html_Attributes$style(
+												{
+													ctor: '::',
+													_0: {ctor: '_Tuple2', _0: 'font-size', _1: '2em'},
+													_1: {ctor: '[]'}
+												}),
+											_1: {ctor: '[]'}
+										}
+									},
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html$text('New Challenge'),
+										_1: {ctor: '[]'}
+									}),
+								_1: {
+									ctor: '::',
+									_0: A2(
+										_elm_lang$html$Html$br,
+										{ctor: '[]'},
+										{ctor: '[]'}),
+									_1: {
+										ctor: '::',
+										_0: A2(
+											_elm_lang$html$Html$br,
+											{ctor: '[]'},
+											{ctor: '[]'}),
+										_1: {ctor: '[]'}
+									}
+								}
+							}
+						}
+					}
+				}
+			},
+			{
+				ctor: '::',
+				_0: A2(
+					_elm_lang$svg$Svg$svg,
+					{
+						ctor: '::',
+						_0: _elm_lang$svg$Svg_Attributes$width('700'),
+						_1: {ctor: '[]'}
+					},
+					{
+						ctor: '::',
+						_0: A2(
+							_elm_lang$svg$Svg$line,
+							{
+								ctor: '::',
+								_0: _elm_lang$svg$Svg_Attributes$x1('0'),
+								_1: {
+									ctor: '::',
+									_0: _elm_lang$svg$Svg_Attributes$y1('10'),
+									_1: {
+										ctor: '::',
+										_0: _elm_lang$svg$Svg_Attributes$x2('700'),
+										_1: {
+											ctor: '::',
+											_0: _elm_lang$svg$Svg_Attributes$y2('10'),
+											_1: {
+												ctor: '::',
+												_0: _elm_lang$svg$Svg_Attributes$stroke('#FFFFFF'),
+												_1: {
+													ctor: '::',
+													_0: _elm_lang$svg$Svg_Attributes$strokeWidth('5'),
+													_1: {ctor: '[]'}
+												}
+											}
+										}
+									}
+								}
+							},
+							{ctor: '[]'}),
+						_1: {
+							ctor: '::',
+							_0: A2(
+								_elm_lang$svg$Svg$line,
+								{
+									ctor: '::',
+									_0: _elm_lang$svg$Svg_Attributes$x1('0'),
+									_1: {
+										ctor: '::',
+										_0: _elm_lang$svg$Svg_Attributes$y1('10'),
+										_1: {
+											ctor: '::',
+											_0: _elm_lang$svg$Svg_Attributes$x2(
+												_elm_lang$core$Basics$toString(model.meterProgress)),
+											_1: {
+												ctor: '::',
+												_0: _elm_lang$svg$Svg_Attributes$y2('10'),
+												_1: {
+													ctor: '::',
+													_0: _elm_lang$svg$Svg_Attributes$stroke('#22DD22'),
+													_1: {
+														ctor: '::',
+														_0: _elm_lang$svg$Svg_Attributes$strokeWidth('5'),
+														_1: {ctor: '[]'}
+													}
+												}
+											}
+										}
+									}
+								},
+								{ctor: '[]'}),
+							_1: {
+								ctor: '::',
+								_0: A2(
+									_elm_lang$svg$Svg$line,
+									{
+										ctor: '::',
+										_0: _elm_lang$svg$Svg_Attributes$x1('0'),
+										_1: {
+											ctor: '::',
+											_0: _elm_lang$svg$Svg_Attributes$y1('13'),
+											_1: {
+												ctor: '::',
+												_0: _elm_lang$svg$Svg_Attributes$x2('700'),
+												_1: {
+													ctor: '::',
+													_0: _elm_lang$svg$Svg_Attributes$y2('13'),
+													_1: {
+														ctor: '::',
+														_0: _elm_lang$svg$Svg_Attributes$stroke('#555555'),
+														_1: {
+															ctor: '::',
+															_0: _elm_lang$svg$Svg_Attributes$strokeWidth('2'),
+															_1: {ctor: '[]'}
+														}
+													}
+												}
+											}
+										}
+									},
+									{ctor: '[]'}),
+								_1: {ctor: '[]'}
+							}
+						}
+					}),
+				_1: {ctor: '[]'}
+			}));
+};
+var _user$project$CallAnswerTrainer$AnimationTick = function (a) {
+	return {ctor: 'AnimationTick', _0: a};
+};
+var _user$project$CallAnswerTrainer$MetTick = function (a) {
+	return {ctor: 'MetTick', _0: a};
+};
+var _user$project$CallAnswerTrainer$subscriptions = function (model) {
+	return _elm_lang$core$Platform_Sub$batch(
+		{
+			ctor: '::',
+			_0: A2(_elm_lang$core$Time$every, 500 * _elm_lang$core$Time$millisecond, _user$project$CallAnswerTrainer$MetTick),
+			_1: {
+				ctor: '::',
+				_0: A2(_elm_lang$core$Time$every, 15 * _elm_lang$core$Time$millisecond, _user$project$CallAnswerTrainer$AnimationTick),
+				_1: {ctor: '[]'}
+			}
+		});
+};
+var _user$project$CallAnswerTrainer$main = _elm_lang$html$Html$program(
+	{init: _user$project$CallAnswerTrainer$init, view: _user$project$CallAnswerTrainer$view, update: _user$project$CallAnswerTrainer$update, subscriptions: _user$project$CallAnswerTrainer$subscriptions})();

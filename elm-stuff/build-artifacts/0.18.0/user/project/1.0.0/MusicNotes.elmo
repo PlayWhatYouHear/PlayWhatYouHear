@@ -1,0 +1,131 @@
+var _user$project$MusicNotes$pitchClassName = function (pitchClass) {
+	var _p0 = pitchClass;
+	switch (_p0.ctor) {
+		case 'C':
+			return 'C';
+		case 'Cs':
+			return 'C#';
+		case 'D':
+			return 'D';
+		case 'Ds':
+			return 'D#';
+		case 'E':
+			return 'E';
+		case 'F':
+			return 'F';
+		case 'Fs':
+			return 'F#';
+		case 'G':
+			return 'G';
+		case 'Gs':
+			return 'G#';
+		case 'A':
+			return 'A';
+		case 'As':
+			return 'A#';
+		default:
+			return 'B';
+	}
+};
+var _user$project$MusicNotes$Note = function (a) {
+	return {midiNumber: a};
+};
+var _user$project$MusicNotes$noteGenerator = A2(
+	_elm_lang$core$Random$map,
+	_user$project$MusicNotes$Note,
+	A2(_elm_lang$core$Random$int, 12, 36));
+var _user$project$MusicNotes$melodyGenerator = function (length) {
+	return A2(_elm_lang$core$Random$list, length, _user$project$MusicNotes$noteGenerator);
+};
+var _user$project$MusicNotes$noteFromMidi = function (midiNumber) {
+	return _user$project$MusicNotes$Note(midiNumber);
+};
+var _user$project$MusicNotes$noteFromPitchClass = F2(
+	function (octave, pitchClass) {
+		var midiClass = function () {
+			var _p1 = pitchClass;
+			switch (_p1.ctor) {
+				case 'C':
+					return 0;
+				case 'Cs':
+					return 1;
+				case 'D':
+					return 2;
+				case 'Ds':
+					return 3;
+				case 'E':
+					return 4;
+				case 'F':
+					return 5;
+				case 'Fs':
+					return 6;
+				case 'G':
+					return 7;
+				case 'Gs':
+					return 8;
+				case 'A':
+					return 9;
+				case 'As':
+					return 10;
+				default:
+					return 11;
+			}
+		}();
+		return _user$project$MusicNotes$Note(midiClass + (12 * octave));
+	});
+var _user$project$MusicNotes$B = {ctor: 'B'};
+var _user$project$MusicNotes$As = {ctor: 'As'};
+var _user$project$MusicNotes$A = {ctor: 'A'};
+var _user$project$MusicNotes$Gs = {ctor: 'Gs'};
+var _user$project$MusicNotes$G = {ctor: 'G'};
+var _user$project$MusicNotes$Fs = {ctor: 'Fs'};
+var _user$project$MusicNotes$F = {ctor: 'F'};
+var _user$project$MusicNotes$E = {ctor: 'E'};
+var _user$project$MusicNotes$Ds = {ctor: 'Ds'};
+var _user$project$MusicNotes$D = {ctor: 'D'};
+var _user$project$MusicNotes$Cs = {ctor: 'Cs'};
+var _user$project$MusicNotes$C = {ctor: 'C'};
+var _user$project$MusicNotes$pitchClassFromMidi = function (midi) {
+	var _p2 = A2(_elm_lang$core$Basics_ops['%'], midi, 12);
+	switch (_p2) {
+		case 0:
+			return _user$project$MusicNotes$C;
+		case 1:
+			return _user$project$MusicNotes$Cs;
+		case 2:
+			return _user$project$MusicNotes$D;
+		case 3:
+			return _user$project$MusicNotes$Ds;
+		case 4:
+			return _user$project$MusicNotes$E;
+		case 5:
+			return _user$project$MusicNotes$F;
+		case 6:
+			return _user$project$MusicNotes$Fs;
+		case 7:
+			return _user$project$MusicNotes$G;
+		case 8:
+			return _user$project$MusicNotes$Gs;
+		case 9:
+			return _user$project$MusicNotes$A;
+		case 10:
+			return _user$project$MusicNotes$As;
+		default:
+			return _user$project$MusicNotes$B;
+	}
+};
+var _user$project$MusicNotes$pitchClassFromNote = function (note) {
+	return _user$project$MusicNotes$pitchClassFromMidi(note.midiNumber);
+};
+var _user$project$MusicNotes$noteName = function (note) {
+	return _user$project$MusicNotes$pitchClassName(
+		_user$project$MusicNotes$pitchClassFromNote(note));
+};
+var _user$project$MusicNotes$noteLongName = function (note) {
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		_user$project$MusicNotes$pitchClassName(
+			_user$project$MusicNotes$pitchClassFromNote(note)),
+		_elm_lang$core$Basics$toString(
+			_elm_lang$core$Native_Utils.eq(note.midiNumber, 0) ? 0 : ((note.midiNumber / 12) | 0)));
+};
