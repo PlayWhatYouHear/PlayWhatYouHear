@@ -32,7 +32,7 @@ main =
 
 
 type alias Challenge =
-  { solution : Note
+  { solution : List Note
   }
 
 type alias Model =
@@ -48,7 +48,7 @@ init : (Model, Cmd Msg)
 init =
   (
     { time = 0
-    , challenge = Challenge <| noteFromPitchClass 1 C
+    , challenge = Challenge <| [ noteFromPitchClass 1 C ]
     , numCorrect = 0
     , numMistakes = 0
     , meterProgress = 0
@@ -65,10 +65,11 @@ type Msg
   | GenerateChallenge
   | NewChallenge Challenge
   | PlayMelody
+  | MelodyDone (Maybe String)
 
 generateChallengeCmd : Cmd Msg
 generateChallengeCmd = Random.generate
-    (NewChallenge << Challenge << noteFromMidi) (Random.int 0 119)
+    (NewChallenge << Challenge) (melodyGenerator 24 48 3)
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
@@ -83,17 +84,22 @@ update msg model =
       ({ model | challenge = challenge }, Cmd.none)
     PlayMelody ->
       (model, playMelody [Note 32])
+    MelodyDone optionalMessage ->
+      (model, Cmd.none)
 
 
 port playMelody : List Note -> Cmd msg
 
 -- SUBSCRIPTIONS
 
+port melodyDone : (Maybe String -> msg) -> Sub msg
+
 subscriptions : Model -> Sub Msg
 subscriptions model =
   Sub.batch
     [ Time.every (500 * Time.millisecond) MetTick
     , Time.every (15 * Time.millisecond) AnimationTick
+    , melodyDone MelodyDone 
     ]
 
 
@@ -148,11 +154,7 @@ view model =
       Html.h2 [] [Html.text s ]
 
     status =
-      myH2
-        ("Press "
-        ++ (pitchClassName
-          <| pitchClassFromNote
-        <| model.challenge.solution))
+      myH2 <| "Play " ++ (showMelody model.challenge.solution)
 
     score =
       renderScore model.numCorrect model.numMistakes

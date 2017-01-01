@@ -84,3 +84,7 @@ noteLongName note =
   ++ (toString (if note.midiNumber == 0
       then 0
       else note.midiNumber // 12))
+
+showMelody : List Note -> String
+showMelody melody =
+  List.foldr (\a s -> a ++ " " ++ s ) "" <| List.map noteLongName melody
