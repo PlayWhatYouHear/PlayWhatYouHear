@@ -6,11 +6,11 @@ type alias Note = { midiNumber : MidiNumber }
 type alias Octave = Int
 type alias MidiNumber = Int
 
-noteGenerator : Generator Note
-noteGenerator = Random.map Note (int 12 36)
+noteGenerator : Int -> Int -> Generator Note
+noteGenerator low high = Random.map Note (int low high)
 
-melodyGenerator : Int -> Generator (List Note)
-melodyGenerator length = list length noteGenerator
+melodyGenerator : Int -> Int -> Int -> Generator (List Note)
+melodyGenerator low high length = list length <| noteGenerator low high
 
 pitchClassFromMidi : MidiNumber -> PitchClass
 pitchClassFromMidi midi =
