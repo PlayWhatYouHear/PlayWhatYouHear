@@ -9417,51 +9417,103 @@ var _user$project$MusicNotes$pitchClassName = function (pitchClass) {
 			return 'B';
 	}
 };
+var _user$project$MusicNotes$midiClass = function (pitchClass) {
+	var _p1 = pitchClass;
+	switch (_p1.ctor) {
+		case 'C':
+			return 0;
+		case 'Cs':
+			return 1;
+		case 'D':
+			return 2;
+		case 'Ds':
+			return 3;
+		case 'E':
+			return 4;
+		case 'F':
+			return 5;
+		case 'Fs':
+			return 6;
+		case 'G':
+			return 7;
+		case 'Gs':
+			return 8;
+		case 'A':
+			return 9;
+		case 'As':
+			return 10;
+		default:
+			return 11;
+	}
+};
+var _user$project$MusicNotes$midiFromPitchClass = F2(
+	function (pitchClass, octave) {
+		return _user$project$MusicNotes$midiClass(pitchClass) + (12 * octave);
+	});
 var _user$project$MusicNotes$Note = function (a) {
 	return {midiNumber: a};
 };
-var _user$project$MusicNotes$noteGenerator = A2(
-	_elm_lang$core$Random$map,
-	_user$project$MusicNotes$Note,
-	A2(_elm_lang$core$Random$int, 12, 36));
-var _user$project$MusicNotes$melodyGenerator = function (length) {
-	return A2(_elm_lang$core$Random$list, length, _user$project$MusicNotes$noteGenerator);
-};
+var _user$project$MusicNotes$noteGenerator = F2(
+	function (low, high) {
+		return A2(
+			_elm_lang$core$Random$map,
+			_user$project$MusicNotes$Note,
+			A2(_elm_lang$core$Random$int, low, high));
+	});
+var _user$project$MusicNotes$melodyGenerator = F3(
+	function (low, high, length) {
+		return A2(
+			_elm_lang$core$Random$list,
+			length,
+			A2(_user$project$MusicNotes$noteGenerator, low, high));
+	});
+var _user$project$MusicNotes$diatonicNoteGenerator = F3(
+	function (ionicKey, octave, numNotes) {
+		var intervalGenerator = A2(_elm_lang$core$Random$int, 0, numNotes - 1);
+		var startingMidi = A2(_user$project$MusicNotes$midiFromPitchClass, ionicKey, octave);
+		var midiFromInterval = function (interval) {
+			return (startingMidi + (12 * ((interval / 7) | 0))) + function () {
+				var _p2 = A2(_elm_lang$core$Basics_ops['%'], interval, 7);
+				switch (_p2) {
+					case 0:
+						return 0;
+					case 1:
+						return 2;
+					case 2:
+						return 4;
+					case 3:
+						return 5;
+					case 4:
+						return 7;
+					case 5:
+						return 9;
+					case 6:
+						return 11;
+					default:
+						return 0;
+				}
+			}();
+		};
+		var noteFromInterval = function (_p3) {
+			return _user$project$MusicNotes$Note(
+				midiFromInterval(_p3));
+		};
+		return A2(_elm_lang$core$Random$map, noteFromInterval, intervalGenerator);
+	});
+var _user$project$MusicNotes$keyedDiatonicMelodyGenerator = F4(
+	function (ionicKey, octave, numNotes, length) {
+		return A2(
+			_elm_lang$core$Random$list,
+			length,
+			A3(_user$project$MusicNotes$diatonicNoteGenerator, ionicKey, octave, numNotes));
+	});
 var _user$project$MusicNotes$noteFromMidi = function (midiNumber) {
 	return _user$project$MusicNotes$Note(midiNumber);
 };
 var _user$project$MusicNotes$noteFromPitchClass = F2(
-	function (octave, pitchClass) {
-		var midiClass = function () {
-			var _p1 = pitchClass;
-			switch (_p1.ctor) {
-				case 'C':
-					return 0;
-				case 'Cs':
-					return 1;
-				case 'D':
-					return 2;
-				case 'Ds':
-					return 3;
-				case 'E':
-					return 4;
-				case 'F':
-					return 5;
-				case 'Fs':
-					return 6;
-				case 'G':
-					return 7;
-				case 'Gs':
-					return 8;
-				case 'A':
-					return 9;
-				case 'As':
-					return 10;
-				default:
-					return 11;
-			}
-		}();
-		return _user$project$MusicNotes$Note(midiClass + (12 * octave));
+	function (pitchClass, octave) {
+		return _user$project$MusicNotes$Note(
+			A2(_user$project$MusicNotes$midiFromPitchClass, pitchClass, octave));
 	});
 var _user$project$MusicNotes$B = {ctor: 'B'};
 var _user$project$MusicNotes$As = {ctor: 'As'};
@@ -9476,8 +9528,8 @@ var _user$project$MusicNotes$D = {ctor: 'D'};
 var _user$project$MusicNotes$Cs = {ctor: 'Cs'};
 var _user$project$MusicNotes$C = {ctor: 'C'};
 var _user$project$MusicNotes$pitchClassFromMidi = function (midi) {
-	var _p2 = A2(_elm_lang$core$Basics_ops['%'], midi, 12);
-	switch (_p2) {
+	var _p4 = A2(_elm_lang$core$Basics_ops['%'], midi, 12);
+	switch (_p4) {
 		case 0:
 			return _user$project$MusicNotes$C;
 		case 1:
@@ -9504,6 +9556,19 @@ var _user$project$MusicNotes$pitchClassFromMidi = function (midi) {
 			return _user$project$MusicNotes$B;
 	}
 };
+var _user$project$MusicNotes$pitchClassGenerator = A2(
+	_elm_lang$core$Random$map,
+	_user$project$MusicNotes$pitchClassFromMidi,
+	A2(_elm_lang$core$Random$int, 0, 10));
+var _user$project$MusicNotes$diatonicMelodyGenerator = F3(
+	function (octave, numNotes, length) {
+		return A2(
+			_elm_lang$core$Random$andThen,
+			function (pc) {
+				return A4(_user$project$MusicNotes$keyedDiatonicMelodyGenerator, pc, octave, numNotes, length);
+			},
+			_user$project$MusicNotes$pitchClassGenerator);
+	});
 var _user$project$MusicNotes$pitchClassFromNote = function (note) {
 	return _user$project$MusicNotes$pitchClassFromMidi(note.midiNumber);
 };
@@ -9519,53 +9584,210 @@ var _user$project$MusicNotes$noteLongName = function (note) {
 		_elm_lang$core$Basics$toString(
 			_elm_lang$core$Native_Utils.eq(note.midiNumber, 0) ? 0 : ((note.midiNumber / 12) | 0)));
 };
+var _user$project$MusicNotes$showMelody = function (melody) {
+	return A3(
+		_elm_lang$core$List$foldr,
+		F2(
+			function (a, s) {
+				return A2(
+					_elm_lang$core$Basics_ops['++'],
+					a,
+					A2(_elm_lang$core$Basics_ops['++'], ' ', s));
+			}),
+		'',
+		A2(_elm_lang$core$List$map, _user$project$MusicNotes$noteLongName, melody));
+};
 
-var _user$project$CallAnswerTrainer$renderScore = F2(
-	function (numCorrect, numMistakes) {
+var _user$project$CallAnswerTrainer$materialButton = F3(
+	function (text, click, styles) {
+		var $class = _elm_lang$html$Html_Attributes$class;
 		return A2(
-			_elm_lang$html$Html$h2,
-			{ctor: '[]'},
+			_elm_lang$html$Html$button,
 			{
 				ctor: '::',
-				_0: _elm_lang$html$Html$text(
-					A2(
-						_elm_lang$core$Basics_ops['++'],
-						_elm_lang$core$Basics$toString(numCorrect),
+				_0: _elm_lang$html$Html_Events$onClick(click),
+				_1: {
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$style(
 						A2(
 							_elm_lang$core$Basics_ops['++'],
-							'/',
-							_elm_lang$core$Basics$toString(numMistakes + numCorrect)))),
+							{
+								ctor: '::',
+								_0: {ctor: '_Tuple2', _0: 'font-size', _1: '2em'},
+								_1: {ctor: '[]'}
+							},
+							styles)),
+					_1: {
+						ctor: '::',
+						_0: $class('btn'),
+						_1: {
+							ctor: '::',
+							_0: $class('blue'),
+							_1: {ctor: '[]'}
+						}
+					}
+				}
+			},
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html$text(text),
 				_1: {ctor: '[]'}
 			});
 	});
+var _user$project$CallAnswerTrainer$meter = function (progressOutOf400) {
+	return A2(
+		_elm_lang$svg$Svg$svg,
+		{
+			ctor: '::',
+			_0: _elm_lang$svg$Svg_Attributes$width('400'),
+			_1: {
+				ctor: '::',
+				_0: _elm_lang$svg$Svg_Attributes$height('20'),
+				_1: {
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$style(
+						{
+							ctor: '::',
+							_0: {ctor: '_Tuple2', _0: 'display', _1: 'block'},
+							_1: {ctor: '[]'}
+						}),
+					_1: {ctor: '[]'}
+				}
+			}
+		},
+		{
+			ctor: '::',
+			_0: A2(
+				_elm_lang$svg$Svg$line,
+				{
+					ctor: '::',
+					_0: _elm_lang$svg$Svg_Attributes$x1('0'),
+					_1: {
+						ctor: '::',
+						_0: _elm_lang$svg$Svg_Attributes$y1('10'),
+						_1: {
+							ctor: '::',
+							_0: _elm_lang$svg$Svg_Attributes$x2('400'),
+							_1: {
+								ctor: '::',
+								_0: _elm_lang$svg$Svg_Attributes$y2('10'),
+								_1: {
+									ctor: '::',
+									_0: _elm_lang$svg$Svg_Attributes$stroke('#FFFFFF'),
+									_1: {
+										ctor: '::',
+										_0: _elm_lang$svg$Svg_Attributes$strokeWidth('5'),
+										_1: {ctor: '[]'}
+									}
+								}
+							}
+						}
+					}
+				},
+				{ctor: '[]'}),
+			_1: {
+				ctor: '::',
+				_0: A2(
+					_elm_lang$svg$Svg$line,
+					{
+						ctor: '::',
+						_0: _elm_lang$svg$Svg_Attributes$x1('0'),
+						_1: {
+							ctor: '::',
+							_0: _elm_lang$svg$Svg_Attributes$y1('10'),
+							_1: {
+								ctor: '::',
+								_0: _elm_lang$svg$Svg_Attributes$x2(
+									_elm_lang$core$Basics$toString(progressOutOf400)),
+								_1: {
+									ctor: '::',
+									_0: _elm_lang$svg$Svg_Attributes$y2('10'),
+									_1: {
+										ctor: '::',
+										_0: _elm_lang$svg$Svg_Attributes$stroke('#22DD22'),
+										_1: {
+											ctor: '::',
+											_0: _elm_lang$svg$Svg_Attributes$strokeWidth('5'),
+											_1: {ctor: '[]'}
+										}
+									}
+								}
+							}
+						}
+					},
+					{ctor: '[]'}),
+				_1: {
+					ctor: '::',
+					_0: A2(
+						_elm_lang$svg$Svg$line,
+						{
+							ctor: '::',
+							_0: _elm_lang$svg$Svg_Attributes$x1('0'),
+							_1: {
+								ctor: '::',
+								_0: _elm_lang$svg$Svg_Attributes$y1('13'),
+								_1: {
+									ctor: '::',
+									_0: _elm_lang$svg$Svg_Attributes$x2('400'),
+									_1: {
+										ctor: '::',
+										_0: _elm_lang$svg$Svg_Attributes$y2('13'),
+										_1: {
+											ctor: '::',
+											_0: _elm_lang$svg$Svg_Attributes$stroke('#555555'),
+											_1: {
+												ctor: '::',
+												_0: _elm_lang$svg$Svg_Attributes$strokeWidth('2'),
+												_1: {ctor: '[]'}
+											}
+										}
+									}
+								}
+							}
+						},
+						{ctor: '[]'}),
+					_1: {ctor: '[]'}
+				}
+			}
+		});
+};
 var _user$project$CallAnswerTrainer$title = A2(
 	_elm_lang$html$Html$h1,
-	{ctor: '[]'},
 	{
 		ctor: '::',
-		_0: _elm_lang$html$Html$text('Call and Answer Trainer'),
+		_0: _elm_lang$html$Html_Attributes$style(
+			{ctor: '[]'}),
+		_1: {ctor: '[]'}
+	},
+	{
+		ctor: '::',
+		_0: _elm_lang$html$Html$text('Play What You Hear'),
 		_1: {ctor: '[]'}
 	});
 var _user$project$CallAnswerTrainer$bodyStyle = _elm_lang$html$Html_Attributes$style(
 	{
 		ctor: '::',
-		_0: {ctor: '_Tuple2', _0: 'background-color', _1: '#DDDDDD'},
+		_0: {ctor: '_Tuple2', _0: 'width', _1: '100%'},
 		_1: {
 			ctor: '::',
-			_0: {ctor: '_Tuple2', _0: 'width', _1: '100%'},
+			_0: {ctor: '_Tuple2', _0: 'position', _1: 'absolute'},
 			_1: {
 				ctor: '::',
-				_0: {ctor: '_Tuple2', _0: 'position', _1: 'absolute'},
+				_0: {ctor: '_Tuple2', _0: 'top', _1: '0px'},
 				_1: {
 					ctor: '::',
-					_0: {ctor: '_Tuple2', _0: 'top', _1: '0px'},
+					_0: {ctor: '_Tuple2', _0: 'left', _1: '0px'},
 					_1: {
 						ctor: '::',
-						_0: {ctor: '_Tuple2', _0: 'left', _1: '0px'},
+						_0: {ctor: '_Tuple2', _0: 'height', _1: 'calc(100vh)'},
 						_1: {
 							ctor: '::',
-							_0: {ctor: '_Tuple2', _0: 'height', _1: 'calc(100vh)'},
-							_1: {ctor: '[]'}
+							_0: {ctor: '_Tuple2', _0: 'font-family', _1: 'sans-serif'},
+							_1: {
+								ctor: '::',
+								_0: {ctor: '_Tuple2', _0: 'text-align', _1: 'center'},
+								_1: {ctor: '[]'}
+							}
 						}
 					}
 				}
@@ -9580,58 +9802,136 @@ var _user$project$CallAnswerTrainer$playMelody = _elm_lang$core$Native_Platform.
 				return {midiNumber: v.midiNumber};
 			});
 	});
+var _user$project$CallAnswerTrainer$stopMelody = _elm_lang$core$Native_Platform.outgoingPort(
+	'stopMelody',
+	function (v) {
+		return null;
+	});
+var _user$project$CallAnswerTrainer$playNote = _elm_lang$core$Native_Platform.outgoingPort(
+	'playNote',
+	function (v) {
+		return {midiNumber: v.midiNumber};
+	});
+var _user$project$CallAnswerTrainer$playNoteCmdSelector = function (model) {
+	var listGet = F2(
+		function (index, list) {
+			return (_elm_lang$core$Native_Utils.cmp(
+				_elm_lang$core$List$length(list),
+				index) > -1) ? _elm_lang$core$List$head(
+				_elm_lang$core$List$reverse(
+					A2(_elm_lang$core$List$take, index, list))) : _elm_lang$core$Maybe$Nothing;
+		});
+	var note = A2(listGet, model.beat + 1, model.challenge.solution);
+	if (model.beating && (!model.muted)) {
+		var _p0 = note;
+		if (_p0.ctor === 'Nothing') {
+			return _elm_lang$core$Platform_Cmd$none;
+		} else {
+			return _user$project$CallAnswerTrainer$playNote(_p0._0);
+		}
+	} else {
+		return _elm_lang$core$Platform_Cmd$none;
+	}
+};
+var _user$project$CallAnswerTrainer$melodyDone = _elm_lang$core$Native_Platform.incomingPort(
+	'melodyDone',
+	_elm_lang$core$Json_Decode$oneOf(
+		{
+			ctor: '::',
+			_0: _elm_lang$core$Json_Decode$null(_elm_lang$core$Maybe$Nothing),
+			_1: {
+				ctor: '::',
+				_0: A2(_elm_lang$core$Json_Decode$map, _elm_lang$core$Maybe$Just, _elm_lang$core$Json_Decode$string),
+				_1: {ctor: '[]'}
+			}
+		}));
 var _user$project$CallAnswerTrainer$Challenge = function (a) {
 	return {solution: a};
 };
-var _user$project$CallAnswerTrainer$Model = F5(
-	function (a, b, c, d, e) {
-		return {time: a, challenge: b, numCorrect: c, numMistakes: d, meterProgress: e};
+var _user$project$CallAnswerTrainer$Model = F9(
+	function (a, b, c, d, e, f, g, h, i) {
+		return {time: a, challenge: b, numChallengesDone: c, meterProgress: d, showSolution: e, userStarted: f, beat: g, beating: h, muted: i};
 	});
-var _user$project$CallAnswerTrainer$PlayMelody = {ctor: 'PlayMelody'};
+var _user$project$CallAnswerTrainer$ToggleMute = {ctor: 'ToggleMute'};
+var _user$project$CallAnswerTrainer$StopMelody = {ctor: 'StopMelody'};
+var _user$project$CallAnswerTrainer$Start = {ctor: 'Start'};
+var _user$project$CallAnswerTrainer$startScreen = function (model) {
+	return A2(
+		_elm_lang$html$Html$div,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: A2(
+				_elm_lang$html$Html$p,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html$text(
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							'Play what you hear on your instrument.',
+							A2(
+								_elm_lang$core$Basics_ops['++'],
+								' This is an exercise to link what',
+								A2(_elm_lang$core$Basics_ops['++'], ' you hear in your head with how you', ' play your instrument.')))),
+					_1: {ctor: '[]'}
+				}),
+			_1: {
+				ctor: '::',
+				_0: A3(
+					_user$project$CallAnswerTrainer$materialButton,
+					'Play',
+					_user$project$CallAnswerTrainer$Start,
+					{ctor: '[]'}),
+				_1: {ctor: '[]'}
+			}
+		});
+};
+var _user$project$CallAnswerTrainer$ShowSolution = {ctor: 'ShowSolution'};
 var _user$project$CallAnswerTrainer$NewChallenge = function (a) {
 	return {ctor: 'NewChallenge', _0: a};
 };
 var _user$project$CallAnswerTrainer$generateChallengeCmd = A2(
 	_elm_lang$core$Random$generate,
-	function (_p0) {
+	function (_p1) {
 		return _user$project$CallAnswerTrainer$NewChallenge(
-			_user$project$CallAnswerTrainer$Challenge(
-				_user$project$MusicNotes$noteFromMidi(_p0)));
+			_user$project$CallAnswerTrainer$Challenge(_p1));
 	},
-	A2(_elm_lang$core$Random$int, 0, 119));
+	A3(_user$project$MusicNotes$diatonicMelodyGenerator, 4, 7, 4));
 var _user$project$CallAnswerTrainer$init = {
 	ctor: '_Tuple2',
 	_0: {
 		time: 0,
 		challenge: _user$project$CallAnswerTrainer$Challenge(
-			A2(_user$project$MusicNotes$noteFromPitchClass, 1, _user$project$MusicNotes$C)),
-		numCorrect: 0,
-		numMistakes: 0,
-		meterProgress: 0
+			{
+				ctor: '::',
+				_0: A2(_user$project$MusicNotes$noteFromPitchClass, _user$project$MusicNotes$C, 1),
+				_1: {ctor: '[]'}
+			}),
+		numChallengesDone: -1,
+		meterProgress: 0,
+		showSolution: false,
+		userStarted: false,
+		beat: 0,
+		beating: false,
+		muted: false
 	},
 	_1: _user$project$CallAnswerTrainer$generateChallengeCmd
 };
 var _user$project$CallAnswerTrainer$update = F2(
 	function (msg, model) {
-		var _p1 = msg;
-		switch (_p1.ctor) {
+		var _p2 = msg;
+		switch (_p2.ctor) {
 			case 'MetTick':
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
-						{time: _p1._0}),
-					_1: _elm_lang$core$Platform_Cmd$none
-				};
-			case 'AnimationTick':
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
 						{
-							meterProgress: A2(_elm_lang$core$Basics_ops['%'], model.meterProgress + 1, 700)
+							time: _p2._0,
+							beat: model.beating ? A2(_elm_lang$core$Basics_ops['%'], model.beat + 1, 8) : model.beat
 						}),
-					_1: _elm_lang$core$Platform_Cmd$none
+					_1: _user$project$CallAnswerTrainer$playNoteCmdSelector(model)
 				};
 			case 'GenerateChallenge':
 				return {ctor: '_Tuple2', _0: model, _1: _user$project$CallAnswerTrainer$generateChallengeCmd};
@@ -9640,25 +9940,94 @@ var _user$project$CallAnswerTrainer$update = F2(
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
-						{challenge: _p1._0}),
+						{challenge: _p2._0, numChallengesDone: model.numChallengesDone + 1, showSolution: false, beat: 0}),
 					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			case 'ShowSolution':
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{showSolution: true}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			case 'Start':
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{userStarted: true, beating: true}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			case 'StopMelody':
+				return {
+					ctor: '_Tuple2',
+					_0: model,
+					_1: _user$project$CallAnswerTrainer$stopMelody(
+						{ctor: '_Tuple0'})
 				};
 			default:
 				return {
 					ctor: '_Tuple2',
-					_0: model,
-					_1: _user$project$CallAnswerTrainer$playMelody(
-						{
-							ctor: '::',
-							_0: _user$project$MusicNotes$Note(32),
-							_1: {ctor: '[]'}
-						})
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{muted: !model.muted}),
+					_1: _elm_lang$core$Platform_Cmd$none
 				};
 		}
 	});
 var _user$project$CallAnswerTrainer$GenerateChallenge = {ctor: 'GenerateChallenge'};
-var _user$project$CallAnswerTrainer$view = function (model) {
-	var score = A2(_user$project$CallAnswerTrainer$renderScore, model.numCorrect, model.numMistakes);
+var _user$project$CallAnswerTrainer$runningAppScreen = function (model) {
+	var br = A2(
+		_elm_lang$html$Html$br,
+		{ctor: '[]'},
+		{ctor: '[]'});
+	var solution = function () {
+		if (model.showSolution) {
+			var noteDiv = function (note) {
+				return A2(
+					_elm_lang$html$Html$div,
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html_Attributes$style(
+							{
+								ctor: '::',
+								_0: {ctor: '_Tuple2', _0: 'display', _1: 'inline'},
+								_1: {
+									ctor: '::',
+									_0: {ctor: '_Tuple2', _0: 'margin-right', _1: '15px'},
+									_1: {
+										ctor: '::',
+										_0: {ctor: '_Tuple2', _0: 'font-size', _1: '3em'},
+										_1: {ctor: '[]'}
+									}
+								}
+							}),
+						_1: {ctor: '[]'}
+					},
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html$text(
+							_user$project$MusicNotes$noteName(note)),
+						_1: {ctor: '[]'}
+					});
+			};
+			return A2(
+				_elm_lang$html$Html$div,
+				{ctor: '[]'},
+				A2(_elm_lang$core$List$map, noteDiv, model.challenge.solution));
+		} else {
+			return A3(
+				_user$project$CallAnswerTrainer$materialButton,
+				'Show Solution',
+				_user$project$CallAnswerTrainer$ShowSolution,
+				{
+					ctor: '::',
+					_0: {ctor: '_Tuple2', _0: 'margin-top', _1: '10'},
+					_1: {ctor: '[]'}
+				});
+		}
+	}();
 	var myH2 = function (s) {
 		return A2(
 			_elm_lang$html$Html$h2,
@@ -9669,199 +10038,122 @@ var _user$project$CallAnswerTrainer$view = function (model) {
 				_1: {ctor: '[]'}
 			});
 	};
-	var status = myH2(
+	var score = myH2(
 		A2(
 			_elm_lang$core$Basics_ops['++'],
-			'Press ',
-			_user$project$MusicNotes$pitchClassName(
-				_user$project$MusicNotes$pitchClassFromNote(model.challenge.solution))));
+			_elm_lang$core$Basics$toString(model.numChallengesDone),
+			' Completed'));
 	return A2(
 		_elm_lang$html$Html$div,
+		{ctor: '[]'},
 		{
 			ctor: '::',
-			_0: _user$project$CallAnswerTrainer$bodyStyle,
-			_1: {ctor: '[]'}
-		},
-		A2(
-			_elm_lang$core$Basics_ops['++'],
-			{
+			_0: A3(
+				_user$project$CallAnswerTrainer$materialButton,
+				'Next Challenge',
+				_user$project$CallAnswerTrainer$GenerateChallenge,
+				{
+					ctor: '::',
+					_0: {ctor: '_Tuple2', _0: 'margin-left', _1: '10px'},
+					_1: {ctor: '[]'}
+				}),
+			_1: {
 				ctor: '::',
-				_0: _user$project$CallAnswerTrainer$title,
+				_0: score,
 				_1: {
 					ctor: '::',
-					_0: status,
+					_0: solution,
 					_1: {
 						ctor: '::',
-						_0: A2(
-							_elm_lang$html$Html$br,
-							{ctor: '[]'},
-							{ctor: '[]'}),
+						_0: br,
 						_1: {
 							ctor: '::',
-							_0: A2(
-								_elm_lang$html$Html$button,
-								{
-									ctor: '::',
-									_0: _elm_lang$html$Html_Events$onClick(_user$project$CallAnswerTrainer$PlayMelody),
-									_1: {ctor: '[]'}
-								},
-								{
-									ctor: '::',
-									_0: _elm_lang$html$Html$text('Play Melody'),
-									_1: {ctor: '[]'}
-								}),
+							_0: br,
 							_1: {
 								ctor: '::',
-								_0: A2(
-									_elm_lang$html$Html$button,
-									{
-										ctor: '::',
-										_0: _elm_lang$html$Html_Events$onClick(_user$project$CallAnswerTrainer$GenerateChallenge),
-										_1: {
-											ctor: '::',
-											_0: _elm_lang$html$Html_Attributes$style(
-												{
-													ctor: '::',
-													_0: {ctor: '_Tuple2', _0: 'font-size', _1: '2em'},
-													_1: {ctor: '[]'}
-												}),
-											_1: {ctor: '[]'}
-										}
-									},
-									{
-										ctor: '::',
-										_0: _elm_lang$html$Html$text('New Challenge'),
-										_1: {ctor: '[]'}
-									}),
+								_0: br,
 								_1: {
 									ctor: '::',
 									_0: A2(
-										_elm_lang$html$Html$br,
-										{ctor: '[]'},
-										{ctor: '[]'}),
-									_1: {
-										ctor: '::',
-										_0: A2(
-											_elm_lang$html$Html$br,
-											{ctor: '[]'},
-											{ctor: '[]'}),
-										_1: {ctor: '[]'}
-									}
+										_elm_lang$html$Html$button,
+										{
+											ctor: '::',
+											_0: _elm_lang$html$Html_Events$onClick(_user$project$CallAnswerTrainer$ToggleMute),
+											_1: {
+												ctor: '::',
+												_0: _elm_lang$html$Html_Attributes$class('grey'),
+												_1: {
+													ctor: '::',
+													_0: _elm_lang$html$Html_Attributes$class('btn'),
+													_1: {ctor: '[]'}
+												}
+											}
+										},
+										{
+											ctor: '::',
+											_0: _elm_lang$html$Html$text(
+												model.muted ? 'Unmute' : 'Mute'),
+											_1: {ctor: '[]'}
+										}),
+									_1: {ctor: '[]'}
 								}
 							}
 						}
 					}
 				}
-			},
+			}
+		});
+};
+var _user$project$CallAnswerTrainer$view = function (model) {
+	var appWrapper = function (trans) {
+		return A2(
+			_elm_lang$html$Html$div,
 			{
 				ctor: '::',
-				_0: A2(
-					_elm_lang$svg$Svg$svg,
+				_0: _elm_lang$html$Html_Attributes$style(
 					{
 						ctor: '::',
-						_0: _elm_lang$svg$Svg_Attributes$width('700'),
-						_1: {ctor: '[]'}
-					},
-					{
-						ctor: '::',
-						_0: A2(
-							_elm_lang$svg$Svg$line,
-							{
-								ctor: '::',
-								_0: _elm_lang$svg$Svg_Attributes$x1('0'),
-								_1: {
-									ctor: '::',
-									_0: _elm_lang$svg$Svg_Attributes$y1('10'),
-									_1: {
-										ctor: '::',
-										_0: _elm_lang$svg$Svg_Attributes$x2('700'),
-										_1: {
-											ctor: '::',
-											_0: _elm_lang$svg$Svg_Attributes$y2('10'),
-											_1: {
-												ctor: '::',
-												_0: _elm_lang$svg$Svg_Attributes$stroke('#FFFFFF'),
-												_1: {
-													ctor: '::',
-													_0: _elm_lang$svg$Svg_Attributes$strokeWidth('5'),
-													_1: {ctor: '[]'}
-												}
-											}
-										}
-									}
-								}
-							},
-							{ctor: '[]'}),
+						_0: {ctor: '_Tuple2', _0: 'margin-left', _1: '15px'},
 						_1: {
 							ctor: '::',
-							_0: A2(
-								_elm_lang$svg$Svg$line,
-								{
-									ctor: '::',
-									_0: _elm_lang$svg$Svg_Attributes$x1('0'),
-									_1: {
-										ctor: '::',
-										_0: _elm_lang$svg$Svg_Attributes$y1('10'),
-										_1: {
-											ctor: '::',
-											_0: _elm_lang$svg$Svg_Attributes$x2(
-												_elm_lang$core$Basics$toString(model.meterProgress)),
-											_1: {
-												ctor: '::',
-												_0: _elm_lang$svg$Svg_Attributes$y2('10'),
-												_1: {
-													ctor: '::',
-													_0: _elm_lang$svg$Svg_Attributes$stroke('#22DD22'),
-													_1: {
-														ctor: '::',
-														_0: _elm_lang$svg$Svg_Attributes$strokeWidth('5'),
-														_1: {ctor: '[]'}
-													}
-												}
-											}
-										}
-									}
-								},
-								{ctor: '[]'}),
-							_1: {
-								ctor: '::',
-								_0: A2(
-									_elm_lang$svg$Svg$line,
-									{
-										ctor: '::',
-										_0: _elm_lang$svg$Svg_Attributes$x1('0'),
-										_1: {
-											ctor: '::',
-											_0: _elm_lang$svg$Svg_Attributes$y1('13'),
-											_1: {
-												ctor: '::',
-												_0: _elm_lang$svg$Svg_Attributes$x2('700'),
-												_1: {
-													ctor: '::',
-													_0: _elm_lang$svg$Svg_Attributes$y2('13'),
-													_1: {
-														ctor: '::',
-														_0: _elm_lang$svg$Svg_Attributes$stroke('#555555'),
-														_1: {
-															ctor: '::',
-															_0: _elm_lang$svg$Svg_Attributes$strokeWidth('2'),
-															_1: {ctor: '[]'}
-														}
-													}
-												}
-											}
-										}
-									},
-									{ctor: '[]'}),
-								_1: {ctor: '[]'}
-							}
+							_0: {ctor: '_Tuple2', _0: 'margin-right', _1: '15px'},
+							_1: {ctor: '[]'}
 						}
 					}),
 				_1: {ctor: '[]'}
-			}));
-};
-var _user$project$CallAnswerTrainer$AnimationTick = function (a) {
-	return {ctor: 'AnimationTick', _0: a};
+			},
+			{
+				ctor: '::',
+				_0: trans,
+				_1: {ctor: '[]'}
+			});
+	};
+	var pageWrapper = function (trans) {
+		return A2(
+			_elm_lang$html$Html$div,
+			{
+				ctor: '::',
+				_0: _user$project$CallAnswerTrainer$bodyStyle,
+				_1: {
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$style(
+						{ctor: '[]'}),
+					_1: {ctor: '[]'}
+				}
+			},
+			{
+				ctor: '::',
+				_0: _user$project$CallAnswerTrainer$title,
+				_1: {
+					ctor: '::',
+					_0: trans,
+					_1: {ctor: '[]'}
+				}
+			});
+	};
+	var appContent = model.userStarted ? _user$project$CallAnswerTrainer$runningAppScreen(model) : _user$project$CallAnswerTrainer$startScreen(model);
+	return pageWrapper(
+		appWrapper(appContent));
 };
 var _user$project$CallAnswerTrainer$MetTick = function (a) {
 	return {ctor: 'MetTick', _0: a};
@@ -9871,11 +10163,7 @@ var _user$project$CallAnswerTrainer$subscriptions = function (model) {
 		{
 			ctor: '::',
 			_0: A2(_elm_lang$core$Time$every, 500 * _elm_lang$core$Time$millisecond, _user$project$CallAnswerTrainer$MetTick),
-			_1: {
-				ctor: '::',
-				_0: A2(_elm_lang$core$Time$every, 15 * _elm_lang$core$Time$millisecond, _user$project$CallAnswerTrainer$AnimationTick),
-				_1: {ctor: '[]'}
-			}
+			_1: {ctor: '[]'}
 		});
 };
 var _user$project$CallAnswerTrainer$main = _elm_lang$html$Html$program(

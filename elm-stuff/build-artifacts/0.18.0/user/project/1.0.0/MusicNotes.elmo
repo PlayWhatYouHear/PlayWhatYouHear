@@ -27,51 +27,103 @@ var _user$project$MusicNotes$pitchClassName = function (pitchClass) {
 			return 'B';
 	}
 };
+var _user$project$MusicNotes$midiClass = function (pitchClass) {
+	var _p1 = pitchClass;
+	switch (_p1.ctor) {
+		case 'C':
+			return 0;
+		case 'Cs':
+			return 1;
+		case 'D':
+			return 2;
+		case 'Ds':
+			return 3;
+		case 'E':
+			return 4;
+		case 'F':
+			return 5;
+		case 'Fs':
+			return 6;
+		case 'G':
+			return 7;
+		case 'Gs':
+			return 8;
+		case 'A':
+			return 9;
+		case 'As':
+			return 10;
+		default:
+			return 11;
+	}
+};
+var _user$project$MusicNotes$midiFromPitchClass = F2(
+	function (pitchClass, octave) {
+		return _user$project$MusicNotes$midiClass(pitchClass) + (12 * octave);
+	});
 var _user$project$MusicNotes$Note = function (a) {
 	return {midiNumber: a};
 };
-var _user$project$MusicNotes$noteGenerator = A2(
-	_elm_lang$core$Random$map,
-	_user$project$MusicNotes$Note,
-	A2(_elm_lang$core$Random$int, 12, 36));
-var _user$project$MusicNotes$melodyGenerator = function (length) {
-	return A2(_elm_lang$core$Random$list, length, _user$project$MusicNotes$noteGenerator);
-};
+var _user$project$MusicNotes$noteGenerator = F2(
+	function (low, high) {
+		return A2(
+			_elm_lang$core$Random$map,
+			_user$project$MusicNotes$Note,
+			A2(_elm_lang$core$Random$int, low, high));
+	});
+var _user$project$MusicNotes$melodyGenerator = F3(
+	function (low, high, length) {
+		return A2(
+			_elm_lang$core$Random$list,
+			length,
+			A2(_user$project$MusicNotes$noteGenerator, low, high));
+	});
+var _user$project$MusicNotes$diatonicNoteGenerator = F3(
+	function (ionicKey, octave, numNotes) {
+		var intervalGenerator = A2(_elm_lang$core$Random$int, 0, numNotes - 1);
+		var startingMidi = A2(_user$project$MusicNotes$midiFromPitchClass, ionicKey, octave);
+		var midiFromInterval = function (interval) {
+			return (startingMidi + (12 * ((interval / 7) | 0))) + function () {
+				var _p2 = A2(_elm_lang$core$Basics_ops['%'], interval, 7);
+				switch (_p2) {
+					case 0:
+						return 0;
+					case 1:
+						return 2;
+					case 2:
+						return 4;
+					case 3:
+						return 5;
+					case 4:
+						return 7;
+					case 5:
+						return 9;
+					case 6:
+						return 11;
+					default:
+						return 0;
+				}
+			}();
+		};
+		var noteFromInterval = function (_p3) {
+			return _user$project$MusicNotes$Note(
+				midiFromInterval(_p3));
+		};
+		return A2(_elm_lang$core$Random$map, noteFromInterval, intervalGenerator);
+	});
+var _user$project$MusicNotes$keyedDiatonicMelodyGenerator = F4(
+	function (ionicKey, octave, numNotes, length) {
+		return A2(
+			_elm_lang$core$Random$list,
+			length,
+			A3(_user$project$MusicNotes$diatonicNoteGenerator, ionicKey, octave, numNotes));
+	});
 var _user$project$MusicNotes$noteFromMidi = function (midiNumber) {
 	return _user$project$MusicNotes$Note(midiNumber);
 };
 var _user$project$MusicNotes$noteFromPitchClass = F2(
-	function (octave, pitchClass) {
-		var midiClass = function () {
-			var _p1 = pitchClass;
-			switch (_p1.ctor) {
-				case 'C':
-					return 0;
-				case 'Cs':
-					return 1;
-				case 'D':
-					return 2;
-				case 'Ds':
-					return 3;
-				case 'E':
-					return 4;
-				case 'F':
-					return 5;
-				case 'Fs':
-					return 6;
-				case 'G':
-					return 7;
-				case 'Gs':
-					return 8;
-				case 'A':
-					return 9;
-				case 'As':
-					return 10;
-				default:
-					return 11;
-			}
-		}();
-		return _user$project$MusicNotes$Note(midiClass + (12 * octave));
+	function (pitchClass, octave) {
+		return _user$project$MusicNotes$Note(
+			A2(_user$project$MusicNotes$midiFromPitchClass, pitchClass, octave));
 	});
 var _user$project$MusicNotes$B = {ctor: 'B'};
 var _user$project$MusicNotes$As = {ctor: 'As'};
@@ -86,8 +138,8 @@ var _user$project$MusicNotes$D = {ctor: 'D'};
 var _user$project$MusicNotes$Cs = {ctor: 'Cs'};
 var _user$project$MusicNotes$C = {ctor: 'C'};
 var _user$project$MusicNotes$pitchClassFromMidi = function (midi) {
-	var _p2 = A2(_elm_lang$core$Basics_ops['%'], midi, 12);
-	switch (_p2) {
+	var _p4 = A2(_elm_lang$core$Basics_ops['%'], midi, 12);
+	switch (_p4) {
 		case 0:
 			return _user$project$MusicNotes$C;
 		case 1:
@@ -114,6 +166,19 @@ var _user$project$MusicNotes$pitchClassFromMidi = function (midi) {
 			return _user$project$MusicNotes$B;
 	}
 };
+var _user$project$MusicNotes$pitchClassGenerator = A2(
+	_elm_lang$core$Random$map,
+	_user$project$MusicNotes$pitchClassFromMidi,
+	A2(_elm_lang$core$Random$int, 0, 10));
+var _user$project$MusicNotes$diatonicMelodyGenerator = F3(
+	function (octave, numNotes, length) {
+		return A2(
+			_elm_lang$core$Random$andThen,
+			function (pc) {
+				return A4(_user$project$MusicNotes$keyedDiatonicMelodyGenerator, pc, octave, numNotes, length);
+			},
+			_user$project$MusicNotes$pitchClassGenerator);
+	});
 var _user$project$MusicNotes$pitchClassFromNote = function (note) {
 	return _user$project$MusicNotes$pitchClassFromMidi(note.midiNumber);
 };
@@ -128,4 +193,17 @@ var _user$project$MusicNotes$noteLongName = function (note) {
 			_user$project$MusicNotes$pitchClassFromNote(note)),
 		_elm_lang$core$Basics$toString(
 			_elm_lang$core$Native_Utils.eq(note.midiNumber, 0) ? 0 : ((note.midiNumber / 12) | 0)));
+};
+var _user$project$MusicNotes$showMelody = function (melody) {
+	return A3(
+		_elm_lang$core$List$foldr,
+		F2(
+			function (a, s) {
+				return A2(
+					_elm_lang$core$Basics_ops['++'],
+					a,
+					A2(_elm_lang$core$Basics_ops['++'], ' ', s));
+			}),
+		'',
+		A2(_elm_lang$core$List$map, _user$project$MusicNotes$noteLongName, melody));
 };

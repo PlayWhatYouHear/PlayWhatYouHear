@@ -1,11 +1,60 @@
+<head>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.8/css/materialize.min.css">
+</head>
+
 <div id="app"></div>
+
+<script src="midilib/Base64.js"></script>
+<script src="midilib/Base64binary.js"></script>
+<script src="midilib/WebAudioAPI.js"></script>
+<script src="midilib/dom_request_script.js"></script>
+<script src="midilib/dom_request_xhr.js"></script>
+<script src="MIDI.min.js"></script>
+
+<script>
+  MIDI.loadPlugin({
+    instrument: "acoustic_grand_piano",
+    onsuccess: function () { return 0; }
+  });
+
+  var delay = 0;
+  var velocity = 127;
+</script>
+
 <script src="CallAnswerTrainer.js"></script>
+
+
 <script>
   var app = Elm.CallAnswerTrainer.fullscreen();
 
+  function playMelody(melody) {
+    MIDI.setVolume(0, 127);
+    for (let i = 0; i < melody.length; i++) {
+      window.setTimeout(function() {
+        playNote(melody[i]);
+      }, 500 * i);
+    }
+  }
+  
+  function playNote(note) {
+    MIDI.noteOn(0, note.midiNumber, velocity, 0);
+    MIDI.noteOff(0, note.midiNumber, 0.5);
+  }
+
   app.ports.playMelody.subscribe(function(melody) {
     console.log("melody", melody);
-    app.ports.melodyDone.send(null);
+    
+    playMelody(melody);
+
+    window.setInterval(function () {
+      playMelody(melody);
+    }, 4000);
+  });
+
+  app.ports.playNote.subscribe(function(note) {
+    console.log("Trying to stop a note!", note);
+
+    playNote(note);
   });
 
 </script>
