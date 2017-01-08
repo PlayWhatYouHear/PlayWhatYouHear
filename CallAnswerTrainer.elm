@@ -38,8 +38,7 @@ type alias Challenge =
 type alias Model =
   { time : Time
   , challenge : Challenge
-  , numCorrect : Int
-  , numMistakes : Int
+  , numChallengesDone : Int
   , meterProgress : Int
   }
 
@@ -49,8 +48,7 @@ init =
   (
     { time = 0
     , challenge = Challenge <| [ noteFromPitchClass 1 C ]
-    , numCorrect = 0
-    , numMistakes = 0
+    , numChallengesDone = -1
     , meterProgress = 0
     }, generateChallengeCmd)
 
@@ -81,7 +79,7 @@ update msg model =
     GenerateChallenge ->
       ( model , generateChallengeCmd )
     NewChallenge challenge ->
-      ({ model | challenge = challenge }, Cmd.none)
+      ({ model | challenge = challenge, numChallengesDone = model.numChallengesDone + 1 }, Cmd.none)
     PlayMelody ->
       (model, playMelody [Note 32])
     MelodyDone optionalMessage ->
@@ -157,12 +155,17 @@ view model =
       myH2 <| "Play " ++ (showMelody model.challenge.solution)
 
     score =
-      renderScore model.numCorrect model.numMistakes
+      myH2 <| toString model.numChallengesDone ++ " Completed"
 
   in
-    Html.div [ bodyStyle ] <|
+    Html.div 
+      [ bodyStyle ] <|
+      
+      [ Html.div [ Html.Attributes.style [ ("margin-left", "20px") ] ] [
+
       [ title
       , status
+      , score
       , Html.br [] []
       , Html.button 
           [ onClick PlayMelody
@@ -177,15 +180,5 @@ view model =
       , Html.br [] []
       , Html.br [] []
       ]
-      ++ [ meter model.meterProgress ]
+      ++ [ meter model.meterProgress ]]
 
-renderScore : Int -> Int -> Html Msg
-renderScore numCorrect numMistakes =
-  Html.h2
-    []
-    [ Html.text
-      (toString
-        numCorrect
-        ++ "/"
-        ++ toString (numMistakes + numCorrect))
-    ]
