@@ -14,7 +14,6 @@ Does the product solve the problem?
 * Number of accounts created
 
 ##SEO
-* Name and description of app.
 * Check google's preferences.
   * Post on lots of sites (Facebook, Reddit, Hacker News, Product Hunt, Tech Crunch)
   * Accessibility

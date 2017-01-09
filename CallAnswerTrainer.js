@@ -9897,7 +9897,7 @@ var _user$project$CallAnswerTrainer$generateChallengeCmd = A2(
 		return _user$project$CallAnswerTrainer$NewChallenge(
 			_user$project$CallAnswerTrainer$Challenge(_p1));
 	},
-	A3(_user$project$MusicNotes$diatonicMelodyGenerator, 4, 7, 4));
+	A3(_user$project$MusicNotes$diatonicMelodyGenerator, 4, 7, 3));
 var _user$project$CallAnswerTrainer$init = {
 	ctor: '_Tuple2',
 	_0: {
