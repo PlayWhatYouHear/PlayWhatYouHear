@@ -45,6 +45,8 @@ type alias Model =
   , beat : Int
   , beating : Bool
   , muted : Bool
+  , notesPerChallenge : Int
+  , numNotesGenerated : Int
   }
 
 
@@ -60,7 +62,9 @@ init =
     , beat = 0
     , beating = False
     , muted = False
-    }, generateChallengeCmd)
+    , notesPerChallenge = 3
+    , numNotesGenerated = 3
+    }, generateChallengeCmd 3)
 
 
 
@@ -68,7 +72,6 @@ init =
 
 type Msg
   = MetTick Time
-  --| AnimationTick Time
   | GenerateChallenge
   | NewChallenge Challenge
   | ShowSolution
@@ -76,9 +79,9 @@ type Msg
   | StopMelody
   | ToggleMute
 
-generateChallengeCmd : Cmd Msg
-generateChallengeCmd = Random.generate
-    (NewChallenge << Challenge) (diatonicMelodyGenerator 4 7 3)
+generateChallengeCmd : Int -> Cmd Msg
+generateChallengeCmd notesPerMelody = Random.generate
+    (NewChallenge << Challenge) (diatonicMelodyGenerator 4 7 notesPerMelody)
 
 playNoteCmdSelector : Model -> Cmd Msg
 playNoteCmdSelector model =
@@ -110,11 +113,9 @@ update msg model =
         , playNoteCmdSelector model
         )
 
-    --AnimationTick newTime ->
-    --  ({ model | meterProgress = (model.meterProgress + 1) % 400 }, Cmd.none)
-
     GenerateChallenge ->
-      ( model , generateChallengeCmd )
+      ( { model | numNotesGenerated = model.numNotesGenerated + model.notesPerChallenge }
+      , generateChallengeCmd model.notesPerChallenge)
 
     NewChallenge challenge ->
       ({ model 
@@ -140,10 +141,9 @@ update msg model =
     ToggleMute ->
       ({ model | muted = not model.muted } , Cmd.none )
 
-
-port playMelody : List Note -> Cmd msg
 port stopMelody : () ->  Cmd msg
 port playNote : Note -> Cmd msg
+port reportMetrics : Int -> Cmd msg
 
 -- SUBSCRIPTIONS
 
@@ -153,7 +153,6 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
   Sub.batch
     [ Time.every (500 * Time.millisecond) MetTick
-    --, Time.every (15 * Time.millisecond) AnimationTick
     ]
 
 
@@ -283,6 +282,9 @@ runningAppScreen model =
 
     score =
       myH2 <| toString model.numChallengesDone ++ " Completed"
+    
+    notesGenerated =
+      myH2 <| toString model.numNotesGenerated ++ " Notes Generated"
 
     br =
       Html.br [] []
@@ -293,7 +295,6 @@ runningAppScreen model =
       [ ]
       [
        materialButton "Next Challenge" GenerateChallenge [ ("margin-left","10px") ]
-      --, meter <| (model.beat * 50)
       , score
       , solution
       , br

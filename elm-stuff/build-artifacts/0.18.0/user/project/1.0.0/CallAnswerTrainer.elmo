@@ -194,14 +194,6 @@ var _user$project$CallAnswerTrainer$bodyStyle = _elm_lang$html$Html_Attributes$s
 			}
 		}
 	});
-var _user$project$CallAnswerTrainer$playMelody = _elm_lang$core$Native_Platform.outgoingPort(
-	'playMelody',
-	function (v) {
-		return _elm_lang$core$Native_List.toArray(v).map(
-			function (v) {
-				return {midiNumber: v.midiNumber};
-			});
-	});
 var _user$project$CallAnswerTrainer$stopMelody = _elm_lang$core$Native_Platform.outgoingPort(
 	'stopMelody',
 	function (v) {
@@ -233,6 +225,11 @@ var _user$project$CallAnswerTrainer$playNoteCmdSelector = function (model) {
 		return _elm_lang$core$Platform_Cmd$none;
 	}
 };
+var _user$project$CallAnswerTrainer$reportMetrics = _elm_lang$core$Native_Platform.outgoingPort(
+	'reportMetrics',
+	function (v) {
+		return v;
+	});
 var _user$project$CallAnswerTrainer$melodyDone = _elm_lang$core$Native_Platform.incomingPort(
 	'melodyDone',
 	_elm_lang$core$Json_Decode$oneOf(
@@ -248,10 +245,29 @@ var _user$project$CallAnswerTrainer$melodyDone = _elm_lang$core$Native_Platform.
 var _user$project$CallAnswerTrainer$Challenge = function (a) {
 	return {solution: a};
 };
-var _user$project$CallAnswerTrainer$Model = F9(
-	function (a, b, c, d, e, f, g, h, i) {
-		return {time: a, challenge: b, numChallengesDone: c, meterProgress: d, showSolution: e, userStarted: f, beat: g, beating: h, muted: i};
-	});
+var _user$project$CallAnswerTrainer$Model = function (a) {
+	return function (b) {
+		return function (c) {
+			return function (d) {
+				return function (e) {
+					return function (f) {
+						return function (g) {
+							return function (h) {
+								return function (i) {
+									return function (j) {
+										return function (k) {
+											return {time: a, challenge: b, numChallengesDone: c, meterProgress: d, showSolution: e, userStarted: f, beat: g, beating: h, muted: i, notesPerChallenge: j, numNotesGenerated: k};
+										};
+									};
+								};
+							};
+						};
+					};
+				};
+			};
+		};
+	};
+};
 var _user$project$CallAnswerTrainer$ToggleMute = {ctor: 'ToggleMute'};
 var _user$project$CallAnswerTrainer$StopMelody = {ctor: 'StopMelody'};
 var _user$project$CallAnswerTrainer$Start = {ctor: 'Start'};
@@ -291,13 +307,15 @@ var _user$project$CallAnswerTrainer$ShowSolution = {ctor: 'ShowSolution'};
 var _user$project$CallAnswerTrainer$NewChallenge = function (a) {
 	return {ctor: 'NewChallenge', _0: a};
 };
-var _user$project$CallAnswerTrainer$generateChallengeCmd = A2(
-	_elm_lang$core$Random$generate,
-	function (_p1) {
-		return _user$project$CallAnswerTrainer$NewChallenge(
-			_user$project$CallAnswerTrainer$Challenge(_p1));
-	},
-	A3(_user$project$MusicNotes$diatonicMelodyGenerator, 4, 7, 3));
+var _user$project$CallAnswerTrainer$generateChallengeCmd = function (notesPerMelody) {
+	return A2(
+		_elm_lang$core$Random$generate,
+		function (_p1) {
+			return _user$project$CallAnswerTrainer$NewChallenge(
+				_user$project$CallAnswerTrainer$Challenge(_p1));
+		},
+		A3(_user$project$MusicNotes$diatonicMelodyGenerator, 4, 7, notesPerMelody));
+};
 var _user$project$CallAnswerTrainer$init = {
 	ctor: '_Tuple2',
 	_0: {
@@ -314,9 +332,11 @@ var _user$project$CallAnswerTrainer$init = {
 		userStarted: false,
 		beat: 0,
 		beating: false,
-		muted: false
+		muted: false,
+		notesPerChallenge: 3,
+		numNotesGenerated: 3
 	},
-	_1: _user$project$CallAnswerTrainer$generateChallengeCmd
+	_1: _user$project$CallAnswerTrainer$generateChallengeCmd(3)
 };
 var _user$project$CallAnswerTrainer$update = F2(
 	function (msg, model) {
@@ -334,7 +354,13 @@ var _user$project$CallAnswerTrainer$update = F2(
 					_1: _user$project$CallAnswerTrainer$playNoteCmdSelector(model)
 				};
 			case 'GenerateChallenge':
-				return {ctor: '_Tuple2', _0: model, _1: _user$project$CallAnswerTrainer$generateChallengeCmd};
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{numNotesGenerated: model.numNotesGenerated + model.notesPerChallenge}),
+					_1: _user$project$CallAnswerTrainer$generateChallengeCmd(model.notesPerChallenge)
+				};
 			case 'NewChallenge':
 				return {
 					ctor: '_Tuple2',
@@ -443,6 +469,11 @@ var _user$project$CallAnswerTrainer$runningAppScreen = function (model) {
 			_elm_lang$core$Basics_ops['++'],
 			_elm_lang$core$Basics$toString(model.numChallengesDone),
 			' Completed'));
+	var notesGenerated = myH2(
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			_elm_lang$core$Basics$toString(model.numNotesGenerated),
+			' Notes Generated'));
 	return A2(
 		_elm_lang$html$Html$div,
 		{ctor: '[]'},

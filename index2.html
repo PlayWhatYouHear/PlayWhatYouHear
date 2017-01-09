@@ -3,60 +3,50 @@
   <meta name="description" content="Play What You Hear teaches you how to play on your instrument what you hear in your head." />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.8/css/materialize.min.css">
 </head>
-
 <div id="app"></div>
-
 <script src="midilib/Base64.js"></script>
 <script src="midilib/Base64binary.js"></script>
 <script src="midilib/WebAudioAPI.js"></script>
 <script src="midilib/dom_request_script.js"></script>
 <script src="midilib/dom_request_xhr.js"></script>
 <script src="MIDI.min.js"></script>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/superagent/3.3.1/superagent.min.js"></script>
 <script>
   MIDI.loadPlugin({
     instrument: "acoustic_grand_piano",
     onsuccess: function () { return 0; }
   });
-
-  var delay = 0;
-  var velocity = 127;
 </script>
-
 <script src="CallAnswerTrainer.js"></script>
-
-
 <script>
+
   var app = Elm.CallAnswerTrainer.fullscreen();
-
-  function playMelody(melody) {
-    MIDI.setVolume(0, 127);
-    for (let i = 0; i < melody.length; i++) {
-      window.setTimeout(function() {
-        playNote(melody[i]);
-      }, 500 * i);
-    }
-  }
-  
-  function playNote(note) {
-    MIDI.noteOn(0, note.midiNumber, velocity, 0);
-    MIDI.noteOff(0, note.midiNumber, 0.5);
-  }
-
-  app.ports.playMelody.subscribe(function(melody) {
-    console.log("melody", melody);
-    
-    playMelody(melody);
-
-    window.setInterval(function () {
-      playMelody(melody);
-    }, 4000);
-  });
+  var windowId = (new Date).getTime().toString() + "";
 
   app.ports.playNote.subscribe(function(note) {
-    console.log("Trying to stop a note!", note);
-
-    playNote(note);
+    MIDI.noteOn(0, note.midiNumber, 127, 0);
+    MIDI.noteOff(0, note.midiNumber, 0.5);
   });
 
+  app.ports.reportMetrics.subscribe(function(notesGenerated, challengesCompleted) {
+    if (notesGenerated > 0 && challengesCompleted >= 0) {
+      
+      var payload = {
+        windowId: windowId,
+        notesGenerated: notesGenerated,
+        challengesCompleted: challengesCompleted
+      }
+
+      var request = window.superagent;
+      var url = "https://jsonplaceholder.typicode.com/posts/1";
+      request
+        .put(url)
+        .send(payload)
+        .end(function(err, res){
+          console.log("err", err);
+          console.log("res", res);
+        });
+
+    }
+  });
 </script>
